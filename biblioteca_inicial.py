@@ -35,7 +35,7 @@ class TelaLivros(Screen):
 
     def compose(self):
         with HorizontalGroup(id="container_botao"):
-            yield Button("Início", variant="primary", id="bt_tela_inicial")
+            yield Button("Voltar", variant="primary", id="bt_tela_inicial")
 
         yield Static("📖  Livros da biblioteca  📖", id="st_header_livros", classes="stt_header_telas")
 
@@ -101,8 +101,8 @@ class TelaLivros(Screen):
                         self.notify(
                             f"{biblioteca.livros[cod].titulo} atualizado com sucesso!")
                     elif biblioteca.atualizar_livro(cod, titulo) == True:
-                        self.notify(f"[i]{biblioteca.livros[cod].cod}[/] não cadastrado")
-                        
+                        self.notify(
+                            f"[i]{biblioteca.livros[cod].cod}[/] não cadastrado")
 
             case "bt_consultar_livro":
                 cod = self.query_one("#ip_pesquisa_codigo", Input).value
@@ -134,7 +134,7 @@ class TelaLivros(Screen):
 class TelaLeitores(Screen):
     def compose(self):
         with HorizontalGroup(id="container_botao"):
-            yield Button("Início", variant="success", id="bt_tela_inicial")
+            yield Button("Voltar", variant="success", id="bt_tela_inicial")
 
         yield Static("🙇‍♂️🙋  Leitores da biblioteca  🧏‍♀️💁‍♂️", id="st_header_emprestimos", classes="stt_header_telas")
 
@@ -199,7 +199,8 @@ class TelaLeitores(Screen):
                         self.notify(
                             f"{biblioteca.leitores[cpf].nome} atualizado com sucesso!")
                     elif biblioteca.atualizar_livro(cpf, nome) == True:
-                        self.notify(f"[i]{biblioteca.leitores[cpf].cpf}[/] não cadastrado")
+                        self.notify(
+                            f"[i]{biblioteca.leitores[cpf].cpf}[/] não cadastrado")
 
             case "bt_consultar_leitor":
                 cpf = self.query_one("#ip_pesquisa_cpf", Input).value
@@ -231,36 +232,54 @@ class TelaLeitores(Screen):
 class TelaEmprestimos(Screen):
     def compose(self):
         with HorizontalGroup(id="container_botao"):
-            yield Button("Início", variant="warning", id="bt_tela_inicial")
+            yield Button("Voltar", variant="warning", id="bt_tela_inicial")
 
         yield Static("🔄📗  Empréstimos da biblioteca  📗🔄", id="st_header_emprestimos", classes="stt_header_telas")
 
         with TabbedContent(initial="tab_emprestimos"):
             with TabPane("Visualizar empréstimos", id="tab_emprestimos"):
                 with HorizontalGroup():
-                    yield Label("CPF do leitor:")
-                    yield Input(placeholder="digite aqui...")
+                    yield Label("Código do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_cod_emprestimo")
 
                 with HorizontalGroup():
-                    yield Label("Código do livro:")
-                    yield Input(placeholder="digite aqui...")
+                    yield Label("CPF do leitor:")
+                    yield Input(placeholder="digite aqui...", id="ip_cpf_emprestimo")
 
-                yield Static(f"""
-Nome do leitor: 
-Título do livro: 
-Situação: 
-""", 
-id="stt_situacao")
+                yield Static("Digite o código do livro e CPF para consultar a situação", id="stt_situacao")
 
                 with HorizontalGroup():
                     yield Button("Emprestar", id="bt_emprestar", classes="grupo_botoes_pesquisa")
                     yield Button("Devolver", id="bt_devolver", classes="grupo_botoes_pesquisa")
 
-
     def on_button_pressed(self, event: Button.Pressed):
+        cpf = self.query_one("#ip_cpf_emprestimo", Input).value
+        cod = self.query_one("#ip_cod_emprestimo", Input).value
+        stt_situacao = self.query_one("#stt_situacao", Static)
+
         match event.button.id:
+            case "bt_tela_inicial":
+                self.app.switch_screen("tela_inicial")
+
             case "bt_emprestar":
-                pass 
+                biblioteca.emprestar(cod, cpf)
+                stt_situacao.update(self.texto_do_emprestimo())
 
             case "bt_devolver":
-                pass
+                biblioteca.devolver(cod, cpf)
+                stt_situacao.update(self.texto_do_emprestimo())
+
+    def texto_do_emprestimo(self):
+        cpf = self.query_one("#ip_cpf_emprestimo", Input).value
+        cod = self.query_one("#ip_cod_emprestimo", Input).value
+
+        if biblioteca.livros[cod].emprestado == True:
+            emprestado = "emprestado"
+        else:
+            emprestado = "livro na biblioteca"
+
+        return f"""
+Nome do leitor: {biblioteca.leitores[cpf].nome}
+Título do livro: {biblioteca.livros[cod].titulo}
+Situação: {emprestado}
+"""
