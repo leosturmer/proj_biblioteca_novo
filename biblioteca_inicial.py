@@ -239,16 +239,17 @@ class TelaEmprestimos(Screen):
             with TabPane("Visualizar empréstimos", id="tab_emprestimos"):
                 with HorizontalGroup():
                     yield Label("CPF do leitor:")
-                    yield Input(placeholder="digite aqui...")
+                    yield Input(placeholder="digite aqui...", id="ip_emprestimo_cpf")
 
                 with HorizontalGroup():
                     yield Label("Código do livro:")
-                    yield Input(placeholder="digite aqui...")
+                    yield Input(placeholder="digite aqui...", id="ip_emprestimo_cod")
 
                 yield Static(f"""
 Nome do leitor: 
 Título do livro: 
 Situação: 
+Data de devolução: 
 """, 
 id="stt_situacao")
 
@@ -258,9 +259,13 @@ id="stt_situacao")
 
 
     def on_button_pressed(self, event: Button.Pressed):
+        cpf = self.query_one("#ip_emprestimo_cpf", Input).value
+        cod = self.query_one("ip_emprestimo_cod", Input).value
+
         match event.button.id:
             case "bt_emprestar":
-                pass 
+                biblioteca.emprestar(cod, cpf) 
+                self.notify(f"{biblioteca.livros[cod]} emprestado!")
 
             case "bt_devolver":
                 pass
