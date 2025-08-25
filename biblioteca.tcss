@@ -1,0 +1,63 @@
+# Tela inicial
+    #titulo_inicial {
+        padding: 3;
+        margin-top: 2;
+        text-align: center;
+    }
+
+    #grupo_botoes_inicial {
+        
+        align: center middle;
+    }
+
+    .botoes_inicial {
+        margin: 2;
+    }
+
+# Tela de livros
+
+    #container_botao {
+        align-horizontal: right;   
+    }
+
+    HorizontalGroup {
+        margin: 1;
+    }
+
+    Label {
+        content-align: center middle;
+        text-align: center;
+        width: 15%;
+    }
+
+    Input {
+        width: 70%;
+    }
+
+    .grupo_botoes_pesquisa {
+        margin-right: 2;
+        margin-bottom: 2;
+        align: center middle;
+    }
+
+
+    .stt_header_telas {
+        content-align: center middle;
+        margin-top: 1;
+        margin: 2;
+
+    }
+
+
+    #stt_situacao {
+        background: grey;
+        color: black;
+        width: 80%;
+        height: auto;
+        content-align: center middle;
+        padding: 1;
+    }
+
+    #bt_tela_inicial {
+        margin-right: 2;
+    }
