@@ -17,6 +17,7 @@ class AppBiblioteca(App):
     }
 
     def on_mount(self):
+        self.theme = "solarized-light"
         self.push_screen("tela_inicial")
 
 
