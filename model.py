@@ -27,6 +27,15 @@ class Biblioteca():
         except KeyError:
             return False
 
+    def get_titulo_livro(self, cod):
+        titulo = str()
+        try:
+            titulo = self.livros[cod].titulo
+        except KeyError:
+            return ""
+
+        return titulo
+
     def atualizar_livro(self, cod, titulo):
         try:
             self.livros[cod]
@@ -70,6 +79,15 @@ class Biblioteca():
             return True
         return False
 
+    def get_nome_leitor(self, cpf):
+        nome = str()
+        try:
+            nome = self.leitores[cpf].nome
+        except KeyError:
+            return ""
+
+        return nome
+
     def calcular_data_devolucao(self):
         import datetime
         hoje = datetime.date.today()
@@ -96,6 +114,13 @@ class Biblioteca():
             leitor_devolvendo.del_emprestimo(livro_devolvido)
         except KeyError:
             return None
+
+    def teste_do_emprestimo(self, cod):
+        try:
+            emprestado = biblioteca.livros[cod].emprestado
+        except KeyError:
+            return ""
+        return emprestado
 
 
 class Livro():

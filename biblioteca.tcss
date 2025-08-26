@@ -1,4 +1,32 @@
 # Tela inicial
+
+    Button {
+        margin-left: 2;
+
+    }
+
+        HorizontalGroup {
+        margin: 1;
+        margin-left: 2;
+        content-align: center middle;
+    }
+
+    Label {
+        text-align: center;
+        content-align: center middle;
+        width: 15%;
+    }
+
+    Input {
+        width: 64%;
+    }
+
+
+    TabbedContent Static {
+        margin-left: 2;
+
+    }
+
     #titulo_inicial {
         padding: 3;
         margin-top: 2;
@@ -20,20 +48,6 @@
         align-horizontal: right;   
     }
 
-    HorizontalGroup {
-        margin: 1;
-    }
-
-    Label {
-        content-align: center middle;
-        text-align: center;
-        width: 15%;
-    }
-
-    Input {
-        width: 70%;
-    }
-
     .grupo_botoes_pesquisa {
         margin-right: 2;
         margin-bottom: 2;
@@ -50,7 +64,7 @@
 
 
     #stt_situacao {
-        background: grey;
+        background: #E2E5C4;
         color: black;
         width: 80%;
         height: auto;
