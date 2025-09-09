@@ -6,7 +6,8 @@ from textual.screen import Screen
 from textual.containers import (
     Container,  HorizontalGroup, VerticalGroup, ScrollableContainer, Grid)
 
-from model import biblioteca
+# from model_1 import biblioteca
+from model_2 import biblioteca
 
 
 class TelaInicial(Screen):
