@@ -1,0 +1,309 @@
+from textual.app import (App, SystemCommand, ComposeResult)
+from textual.widgets import (
+    Static,  Header, Footer, Button, TabbedContent, TabPane, Input, Label)
+from textual.binding import Binding
+from textual.screen import Screen
+from textual.containers import (
+    Container,  HorizontalGroup, VerticalGroup, ScrollableContainer, Grid)
+
+from modelbd import biblioteca
+
+class TelaInicial(Screen):
+    def compose(self):
+        yield Static("📚 Biblioteca 📚", id="titulo_inicial")
+
+        with VerticalGroup(id="grupo_botoes_inicial"):
+            yield Button("Livros", id="bt_livros", classes="botoes_inicial", variant="primary")
+            yield Button("Leitores", id="bt_leitores", classes="botoes_inicial", variant="success")
+            yield Button("Empréstimos", id="bt_emprestimos", classes="botoes_inicial", variant="warning")
+            yield Button("Sair", id="bt_sair", classes="botoes_inicial")
+
+    def on_button_pressed(self, event: Button.Pressed):
+        match event.button.id:
+            case "bt_livros":
+                self.app.switch_screen("tela_livros")
+            case "bt_leitores":
+                self.app.switch_screen("tela_leitores")
+            case "bt_emprestimos":
+                self.app.switch_screen("tela_emprestimos")
+            case "bt_sair":
+                self.app.exit()
+
+
+class TelaLivros(Screen):
+
+    def compose(self):
+        with HorizontalGroup(id="container_botao"):
+            yield Button("Voltar", variant="primary", id="bt_tela_inicial")
+
+        yield Static("📖  Livros da biblioteca  📖", id="st_header_livros", classes="stt_header_telas")
+
+        with TabbedContent(initial="tab_cadastrar"):
+
+            with TabPane("Cadastrar livro", id="tab_cadastrar"):
+
+                with HorizontalGroup():
+                    yield Label("Título do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_cadastro_titulo")
+                with HorizontalGroup():
+                    yield Label("Código do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_cadastro_codigo")
+                with HorizontalGroup():
+                    yield Button("Cadastrar", id="bt_cadastro_livro")
+
+            with TabPane("Atualizar livro", id="tab_atualizar"):
+                with HorizontalGroup():
+                    yield Label("Título do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_atualizar_titulo")
+                with HorizontalGroup():
+                    yield Label("Código do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_atualizar_codigo")
+                with HorizontalGroup():
+                    yield Button("Atualizar", id="bt_atualizar_livro")
+
+            with TabPane("Pesquisar livro", id="tab_pesquisar"):
+                with HorizontalGroup():
+                    yield Label("Código do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_pesquisa_codigo")
+
+                yield Static(f"Situação do livro", id="stt_situacao")
+
+                with HorizontalGroup():
+                    yield Button("Pesquisar", id="bt_consultar_livro", classes="grupo_botoes_pesquisa")
+                    yield Button("Excluir", id="bt_excluir_livro", classes="grupo_botoes_pesquisa")
+
+    def on_button_pressed(self, event: Button.Pressed):
+        match event.button.id:
+            case "bt_tela_inicial":
+                self.app.switch_screen("tela_inicial")
+
+            case "bt_cadastro_livro":
+                titulo = self.query_one("#ip_cadastro_titulo", Input).value
+                cod = self.query_one("#ip_cadastro_codigo", Input).value
+
+                if titulo == "" or cod == "":
+                    self.notify("Insira os dados do livro!")
+                elif biblioteca.cadastrar_livro(cod, titulo) == True:
+                    self.notify(
+                        f"{biblioteca.get_titulo_livro(cod)} cadastrado com sucesso!")
+                elif biblioteca.cadastrar_livro(cod, titulo) == False:
+                    self.notify(
+                        f"Código {cod} já cadastrado! Título: [u]{biblioteca.get_titulo_livro(cod)}[/]")
+
+            case "bt_atualizar_livro":
+                titulo = self.query_one("#ip_atualizar_titulo", Input).value
+                cod = self.query_one("#ip_atualizar_codigo", Input).value
+
+                if titulo == "" or cod == "":
+                    self.notify("Insira os dados do livro!")
+                else:
+                    if biblioteca.atualizar_livro(cod, titulo) == False:
+                        self.notify(
+                            f"{biblioteca.get_titulo_livro(cod)} atualizado com sucesso!")
+                    elif biblioteca.atualizar_livro(cod, titulo) == True:
+                        self.notify(f"Não cadastrado")
+
+            case "bt_consultar_livro":
+                cod = self.query_one("#ip_pesquisa_codigo", Input).value
+                livro = biblioteca.consultar_livro(cod)
+                stt_situacao = self.query_one("#stt_situacao", Static)
+
+                if cod == "":
+                    self.notify("Insira o código do livro!")
+                elif livro:
+                    stt_situacao.update(
+                        f"Livro cadastrado: [i]{livro.titulo}[/], código {livro.cod}")
+                else:
+                    stt_situacao.update(f"Código não cadastrado")
+
+            case "bt_excluir_livro":
+                cod = self.query_one("#ip_pesquisa_codigo", Input).value
+                livro = biblioteca.consultar_livro(cod)
+
+                if cod == "":
+                    self.notify("Insira o código do livro!")
+                elif livro:
+                    cod = self.query_one("#ip_pesquisa_codigo", Input).value
+                    biblioteca.excluir_livro(cod)
+                    self.notify("Livro excluído!")
+                else:
+                    self.notify("Livro não encontrado!")
+
+
+class TelaLeitores(Screen):
+    def compose(self):
+        with HorizontalGroup(id="container_botao"):
+            yield Button("Voltar", variant="success", id="bt_tela_inicial")
+
+        yield Static("🙇‍♂️🙋  Leitores da biblioteca  🧏‍♀️💁‍♂️", id="st_header_emprestimos", classes="stt_header_telas")
+
+        with TabbedContent(initial="tab_cadastrar"):
+
+            with TabPane("Cadastrar leitor", id="tab_cadastrar"):
+                with HorizontalGroup():
+                    yield Label("Nome:")
+                    yield Input(placeholder="digite aqui...", id="ip_cadastro_nome")
+                with HorizontalGroup():
+                    yield Label("CPF:")
+                    yield Input(placeholder="digite aqui...", id="ip_cadastro_cpf")
+                with HorizontalGroup():
+                    yield Button("Cadastrar", id="bt_cadastro_leitor")
+
+            with TabPane("Atualizar leitor", id="tab_atualizar"):
+                with HorizontalGroup():
+                    yield Label("Nome:")
+                    yield Input(placeholder="digite aqui...", id="ip_atualizar_nome")
+                with HorizontalGroup():
+                    yield Label("CPF:")
+                    yield Input(placeholder="digite aqui...", id="ip_atualizar_cpf")
+                with HorizontalGroup():
+                    yield Button("Atualizar", id="bt_atualizar_leitor")
+
+            with TabPane("Pesquisar leitor", id="tab_pesquisar"):
+                with HorizontalGroup():
+                    yield Label("CPF:")
+                    yield Input(placeholder="digite aqui...", id="ip_pesquisa_cpf")
+
+                yield Static(f"Situação do leitor", id="stt_situacao")
+
+                with HorizontalGroup():
+                    yield Button("Pesquisar", id="bt_consultar_leitor", classes="grupo_botoes_pesquisa")
+                    yield Button("Excluir", id="bt_excluir_leitor", classes="grupo_botoes_pesquisa")
+
+    def on_button_pressed(self, event: Button.Pressed):
+        match event.button.id:
+            case "bt_tela_inicial":
+                self.app.switch_screen("tela_inicial")
+
+            case "bt_cadastro_leitor":
+                nome = self.query_one("#ip_cadastro_nome", Input).value
+                cpf = self.query_one("#ip_cadastro_cpf", Input).value
+
+                if nome == "" or cpf == "":
+                    self.notify("Insira os dados do leitor!")
+                elif biblioteca.cadastrar_leitor(cpf, nome) == True:
+                    self.notify(
+                        f"{biblioteca.get_nome_leitor(cpf)} cadastrado com sucesso!")
+                elif biblioteca.cadastrar_leitor(cpf, nome) == False:
+                    self.notify(
+                        f"CPF {cpf} já cadastrado! Usuário: {biblioteca.get_nome_leitor(cpf)}")
+
+            case "bt_atualizar_leitor":
+                nome = self.query_one("#ip_atualizar_nome", Input).value
+                cpf = self.query_one("#ip_atualizar_cpf", Input).value
+
+                if nome == "" or cpf == "":
+                    self.notify("Insira os dados do leitor!")
+                else:
+                    if biblioteca.atualizar_leitor(cpf, nome) == False:
+                        self.notify(
+                            f"{biblioteca.get_nome_leitor(cpf)} atualizado com sucesso!")
+                    elif biblioteca.atualizar_livro(cpf, nome) == True:
+                        self.notify(f"Não cadastrado")
+
+            case "bt_consultar_leitor":
+                cpf = self.query_one("#ip_pesquisa_cpf", Input).value
+                leitor = biblioteca.consultar_leitor(cpf)
+                stt_situacao = self.query_one("#stt_situacao", Static)
+
+                if cpf == "":
+                    self.notify("Insira o CPF do leitor!")
+                elif leitor:
+                    stt_situacao.update(
+                        f"Leitor cadastrado: [i]{leitor.nome}[/], CPF {leitor.cpf}")
+                else:
+                    stt_situacao.update(f"CPF não cadastrado")
+
+            case "bt_excluir_leitor":
+                cpf = self.query_one("#ip_pesquisa_cpf", Input).value
+                leitor = biblioteca.consultar_leitor(cpf)
+
+                if cpf == "":
+                    self.notify("Insira o CPF do leitor!")
+                elif leitor:
+                    cpf = self.query_one("#ip_pesquisa_cpf", Input).value
+                    biblioteca.excluir_leitor(cpf)
+                    self.notify("Leitor excluído!")
+                else:
+                    self.notify("Leitor não encontrado!")
+
+
+class TelaEmprestimos(Screen):
+    def compose(self):
+        with HorizontalGroup(id="container_botao"):
+            yield Button("Voltar", variant="warning", id="bt_tela_inicial")
+
+        yield Static("🔄📗  Empréstimos da biblioteca  📗🔄", id="st_header_emprestimos", classes="stt_header_telas")
+
+        with TabbedContent(initial="tab_emprestimos"):
+            with TabPane("Visualizar empréstimos", id="tab_emprestimos"):
+                with HorizontalGroup():
+                    yield Label("Código do livro:")
+                    yield Input(placeholder="digite aqui...", id="ip_cod_emprestimo")
+
+                with HorizontalGroup():
+                    yield Label("CPF do leitor:")
+                    yield Input(placeholder="digite aqui...", id="ip_cpf_emprestimo")
+
+                yield Static("""
+Digite o código do livro e CPF para consultar a situação
+
+Nome do leitor:
+Título do livro: 
+Situação:
+""", id="stt_situacao")
+
+                with HorizontalGroup():
+                    yield Button("Emprestar", id="bt_emprestar", classes="grupo_botoes_pesquisa")
+                    yield Button("Devolver", id="bt_devolver", classes="grupo_botoes_pesquisa")
+
+    def dados_input_emprestimos(self):
+        cpf = self.query_one("#ip_cpf_emprestimo", Input).value
+        cod = self.query_one("#ip_cod_emprestimo", Input).value
+
+        return cpf, cod
+
+    def on_button_pressed(self, event: Button.Pressed):
+        cpf, cod = self.dados_input_emprestimos()
+
+        stt_situacao = self.query_one("#stt_situacao", Static)
+
+        match event.button.id:
+            case "bt_tela_inicial":
+                self.app.switch_screen("tela_inicial")
+
+            case "bt_emprestar":
+                if cpf == "" or cod == "":
+                    self.notify("Insira os dados do empréstimo!")
+                else:
+                    biblioteca.emprestar(cod, cpf)
+                    stt_situacao.update(self.texto_do_emprestimo())
+
+            case "bt_devolver":
+                if cpf == "" or cod == "":
+                    self.notify("Insira os dados do empréstimo!")
+                else:
+                    biblioteca.devolver(cod, cpf)
+                    stt_situacao.update(self.texto_do_emprestimo())
+
+    def texto_do_emprestimo(self):
+        cpf, cod = self.dados_input_emprestimos()
+        emprestado = biblioteca.teste_do_emprestimo(cod)
+
+        leitor = biblioteca.get_nome_leitor(cpf)
+        livro = biblioteca.get_titulo_livro(cod)
+
+        if emprestado == True:
+            emprestado = "emprestado"
+        elif emprestado == False:
+            emprestado = "na biblioteca"
+        elif emprestado == "":
+            self.notify("Dados não encontrados!")
+
+        return f"""
+Digite o código do livro e CPF para consultar a situação
+
+Nome do leitor: {leitor}
+Título do livro: {livro}
+Situação: {emprestado}
+"""
